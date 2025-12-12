@@ -16,19 +16,25 @@ void printarray(std::vector<printable> arr) {
     }
 }
 
-std::vector<std::string> split(const std::string& s, char delim) {
-    std::vector<std::string> out;
+std::vector<std::string> split(const std::string& s, const char delim = 0) {
+    std::vector<std::string> out{};
     std::string temp;
 
-    for (char c : s) {
-        if (c == delim and temp.length() != 0) {
+    if (s.empty()){
+        return out;
+    }
+    for (const char c : s) {
+        if (delim == 0) {
+            out.push_back(std::string(c,1));
+        } else if (c == delim and temp.length() != 0) {
             out.push_back(temp);
             temp.clear();
         } else if (c != delim) {
             temp += c;
         }
     }
-    out.push_back(temp);
+    temp.empty() ? (void)0: out.push_back(temp);
+    
     return out;
 }
 std::vector<std::string> parse_file(std::ifstream& file) {
@@ -45,10 +51,12 @@ std::vector<std::string> parse_file(std::ifstream& file) {
 void part1(const std::vector<std::string>& data) {
     std::vector<
         std::vector<long> // number array
-    > lists;
+    > lists{};
 
     const int width = split(data[0], ' ').size();
-    lists.reserve(width);
+    for (int i{0}; i<width;i++){
+        lists.push_back({});
+    }
 
     printf("reserved done\n");
     std::fflush(stdout);
@@ -58,12 +66,7 @@ void part1(const std::vector<std::string>& data) {
         auto temp = split(line.c_str(), ' ');
 
         for (int j{0}; j < width; ++j) {
-            try {
-                lists.at(j).push_back({std::atol(temp.at(j).c_str())}); 
-            } catch (std::runtime_error) {
-                throw std::runtime_error(std::format("something wrong"));
-            }
-            
+            lists[j].push_back({std::atol(temp[j].c_str())});
         }
     }
 
@@ -73,8 +76,8 @@ void part1(const std::vector<std::string>& data) {
 
     long long total = 0;
     for (int i{0}; i < ops.size(); ++i) {
-
         char op = ops[i].at(0);
+
         long sub_total = op == '*';
         for (auto d:lists[i]) {
             // std::printf("       %ld %c\n", d, op);
@@ -91,10 +94,60 @@ void part1(const std::vector<std::string>& data) {
     std::printf("total %lld\n", total);
 }
 
+void part2(std::vector<std::string>& data) {
+    long long total = 0;
+
+    const int width = data[0].length();
+    const int height = data.size();
+
+    std::vector<std::string> current_arr{};
+
+    for (int x{width - 1}; x >= 0; --x) {
+
+        std::string current_num = "";
+        
+        for (int y{0}; y < height - 1; ++y) {
+            const char d = data[y][x];
+            if (d != ' ')
+                current_num.push_back(d);
+        }
+
+        const char op = data[height-1][x];
+
+        long sub_total{0};
+        switch (op) {
+            case ' ': {
+                printf("added '%s'\n", current_num.c_str());
+                current_num.empty() ? (void)0 : current_arr.push_back(current_num);
+                break;
+            } case '+': {
+                current_arr.push_back(current_num.c_str());
+                for (auto d:current_arr) {
+                    // printf("   adding '%s' to %ld\n", d.c_str(), sub_total);
+                    sub_total += std::atol(d.c_str());
+                }
+                current_arr.clear();
+                break;
+            } case '*': {
+                sub_total = 1;
+                current_arr.push_back(current_num.c_str());
+                for (auto d:current_arr) {
+                    // printf("   multiplying %ld by %s\n", sub_total, d.c_str());
+                    sub_total *= std::atol(d.c_str());
+                }
+                current_arr.clear();
+                break;
+            }
+        }
+
+        total += sub_total;
+    }
+    std::printf("total %lld", total);
+}
 
 bool test = 0;
 int main(int argc, char* argv[]) {
-    auto solve = part1;
+    auto solve = part2;
     if (not test) {
         std::filesystem::path exec_path = argv[0];
         auto file = std::ifstream(exec_path.parent_path() / "data.txt");
@@ -103,10 +156,10 @@ int main(int argc, char* argv[]) {
         solve(data);
     } else {
         std::vector<std::string> data = {
-            "123 328  51 64",
-            "45 64  387 23",
-            "6 98  215 314",
-            "*   +   *   +"};
+            "123 328  51 64 ",
+            " 45 64  387 23 ",
+            "  6 98  215 314",
+            "*   +   *   +  "};
         solve(data);
     }
 
