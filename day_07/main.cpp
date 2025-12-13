@@ -23,7 +23,7 @@ void part1(std::vector<std::string>& data) {
     
     long total= 0;
     uint width = {0};
-    std::unordered_set<uint64_t> travelers{};
+    std::unordered_set<uint64_t> travelers;
 
     if (not data.empty())
         if (not data.begin() -> empty())
@@ -32,24 +32,25 @@ void part1(std::vector<std::string>& data) {
     // first search where the stater is located
     for (uint8_t i{0}; i<width; i++) {
         if (data[0][i] == 'S'){
-            printf("starter is found at %d\n", i);
-            fflush(stdout);
-            travelers.insert({i,0});
+            // printf("starter is found at %d\n", i);
+            // fflush(stdout);
+            travelers.insert(dxy_to64(i,1));
             break;
         }
     }
     // perform a step
-    uint line = 0;
+    ulong line = 0;
     for (; line < data.size(); line++) {
         int stotal = 0;
         std::unordered_set<uint64_t> next_travelers{};
         for (const auto& d: travelers) {
             std::array<uint32_t,2> pos = d64_toxy(d);
+            if (pos[0] > width) continue;
             char land = data[pos[1]][pos[0]];
             if (land == '^') {
                 pos[1] += 1;
                 // check which direction the new traveler will move
-                int8_t npos = pos[0] < width - 1? -1 : 1;
+                int8_t npos = pos[0] < width - 1? 1 : -1;
                 auto ntrav = pos;
                 ntrav[0] += npos;
                 next_travelers.insert(dxy_to64(ntrav)); // then add the new traveler
@@ -67,7 +68,6 @@ void part1(std::vector<std::string>& data) {
         travelers = next_travelers;
         total += stotal;
     }
-
     std::printf("total %ld", total);
 }
 
