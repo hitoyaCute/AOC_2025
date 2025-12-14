@@ -45,7 +45,7 @@ void part1(std::vector<std::string>& data) {
         std::unordered_set<uint64_t> next_travelers{};
         for (const auto& d: travelers) {
             std::array<uint32_t,2> pos = d64_toxy(d);
-            if (pos[0] > width) continue;
+            if (pos[0] >= width or 0 > pos[1] or pos[1] >= data.size()) continue;
             char land = data[pos[1]][pos[0]];
             if (land == '^') {
                 pos[1] += 1;
@@ -72,7 +72,7 @@ void part1(std::vector<std::string>& data) {
 }
 
 
-bool test = 1;
+bool test = 0;
 int main(int argc, char* argv[]) {
     auto solve = part1;
     if (not test) {
