@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+for ((i = 15; i > 0; i--)); do
+    # echo "$i"
+    # echo "checking for ./day_$(printf '%02d' $i)/main.cpp"
+    if [ -e "./day_$(printf '%02d' $i)/main.cpp" ]; then
+
+        bin="./day_$(printf '%02d' $i)/main"
+        src="./day_$(printf '%02d' $i)/main.cpp"
+
+        echo "running $src $(echo 'with optimizations' && [ "$1" != "-d" ] && echo '' || echo 'in debug mode')"
+
+        # compile with optimizations if $1 is not '-d'
+        if [ "$1" == "-d" ]; then
+            c++ -o $bin $src -std=c++23 -g -Wall -fsanitize=address
+            gdb $bin
+            rm $bin
+            break
+        fi
+        c++ -o $bin $src -std=c++23 -O3 -Wall 
+        time $bin
+        rm $bin
+        break
+    fi
+done
+
+echo -e '\n'
+

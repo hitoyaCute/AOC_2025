@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <sys/types.h>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <filesystem>
@@ -72,9 +73,57 @@ void part1(std::vector<std::string>& data) {
 }
 
 
+// perform a recursive search for every possible path
+long recursive_search(const std::vector<std::string>& data, const uint32_t x, const uint32_t y, std::unordered_map<uint64_t, long>& cache) {
+    // base case
+    if (y >= data.size()) return 1;
+    if (x >= data[0].length()) return 0;
+
+    // check cache
+    uint64_t key = dxy_to64(x,y);
+    if (cache.find(key) != cache.end()) {
+        return cache[key];
+    }
+
+    char land = data[y][x];
+    long total = 0;
+    if (land == '^') {
+        // move down left
+        total += recursive_search(data, x - 1, y + 1, cache);
+        // move down right
+        total += recursive_search(data, x + 1, y + 1, cache);
+    } else if (land == '.') {
+        // move down
+        total += recursive_search(data, x, y + 1, cache);
+    }
+    cache[dxy_to64(x,y)] = total;
+    return total;
+}
+
+
+void part2(std::vector<std::string>& data) {
+    // count every branch the traveler can possibly take
+    long total= 0;
+    uint width = data.empty() ? 0 : data[0].length();
+    // add memoization
+    std::unordered_map<uint64_t, long> cache{};
+    
+    // first search where the stater is located
+    for (uint8_t i{0}; i<width; i++) {
+        if (data[0][i] == 'S'){
+            total = recursive_search(data, i, 1, cache);
+            break;
+        }
+    }
+    
+    printf("total %ld", total);
+}
+
+
+
 bool test = 0;
 int main(int argc, char* argv[]) {
-    auto solve = part1;
+    auto solve = part2;
     if (not test) {
         std::filesystem::path exec_path = argv[0];
         auto file = std::ifstream(exec_path.parent_path() / "data.txt");

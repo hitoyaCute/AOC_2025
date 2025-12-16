@@ -1,8 +1,7 @@
 import os
 from pathlib import Path
 
-class Lock:
-    
+class Lock:  
     def __init__(self,starting = 0, hrange=99):
         self.range = hrange + 1
         self.val = starting
@@ -22,7 +21,6 @@ class Lock:
         self.inc(step)
         self.check()
 
-
 def unlock(path:str):
     data:list[str] = []
     c = Lock(50)
@@ -35,8 +33,6 @@ def unlock(path:str):
         else:
             c.r(int(''.join(d)) or 1)
     print(c.password)
-
-
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)
