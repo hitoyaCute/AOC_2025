@@ -15,39 +15,76 @@ std::vector<std::string>parse_file(std::ifstream&f){std::vector<std::string>o;st
 // connectedSet
 // a set of set, when inserting new elements, it merges to existing set if they are connected
 // else it creates a new set
+template<typename T>
 struct connectedSet {
-    std::vector<std::vector<int>> sets;
+    std::vector<std::vector<T>> sets{};
 
-    void insert(const std::vector<int>& new_set) {
-        std::vector<int> to_merge;
+    constexpr connectedSet(): sets() {}
+    connectedSet(const connectedSet& other): sets(other.sets) {}
+    connectedSet& operator=(const connectedSet& other) = default;
+
+    // check if two elements are connected
+    bool is_connected(const T& a, const T& b) {
+        // example connection: if the difference between a and b is less than 3
+        return std::abs(a - b) <= 3;
+    }
+
+    void insert(const T& element) {
+        std::vector<int> connected_indices;
         for (size_t i = 0; i < sets.size(); ++i) {
-            for (const int& elem : new_set) {
-                if (std::find(sets[i].begin(), sets[i].end(), elem) != sets[i].end()) {
-                    to_merge.push_back(i);
+            for (const auto& item : sets[i]) {
+                if (is_connected(item, element)) {
+                    connected_indices.push_back(i);
                     break;
                 }
             }
         }
 
-        if (to_merge.empty()) {
-            sets.push_back(new_set);
+        if (connected_indices.empty()) {
+            sets.push_back({element});
         } else {
-            std::vector<int> merged_set = new_set;
-            for (int index : to_merge) {
-                merged_set.insert(merged_set.end(), sets[index].begin(), sets[index].end());
+            std::vector<T> new_set = {element};
+            for (int index : connected_indices) {
+                new_set.insert(new_set.end(), sets[index].begin(), sets[index].end());
             }
             // Remove merged sets
-            for (int i = to_merge.size() - 1; i >= 0; --i) {
-                sets.erase(sets.begin() + to_merge[i]);
+            for (int i = connected_indices.size() - 1; i >= 0; --i) {
+                sets.erase(sets.begin() + connected_indices[i]);
             }
-            sets.push_back(merged_set);
+            sets.push_back(new_set);
         }
+    }
+
+    size_t size() const {
+        return sets.size();
     }
 };
 
 
+
+// solution on https://adventofcode.com/2025/day/8
 void part1(std::vector<std::string>& data) {
-    
+
+    connectedSet<std::tuple<int,int,int>> Nset;
+    std::vector<std::tuple<int,int,int>> points;
+
+    constexpr int allocated_wires = 10; // 10 for sample data, 1000 for real data
+    // parse input
+    for (const auto& line : data) {
+        auto parts = split(line, ',');
+        int x = std::stoi(parts[0]);
+        int y = std::stoi(parts[1]);
+        int z = std::stoi(parts[2]);
+        points.emplace_back(x, y, z);
+    }
+    // sort the points for faster processing
+    std::sort(points.begin(), points.end()); 
+
+    // consume the allocated_wires
+    for (int i{allocated_wires}; i>0; --i) {
+        // search for 2 closest points
+        // but since we sorted the points, we can just check the next points
+    }
 }
 
 bool test = 1;
@@ -60,7 +97,27 @@ int main(int argc, char* argv[]) {
         std::vector<std::string> data = parse_file(file);
         solve(data);
     } else {
-        std::vector<std::string> data = {};
+        std::vector<std::string> data = {
+            "162,817,812",
+            "57,618,57",
+            "906,360,560",
+            "592,479,940",
+            "352,342,300",
+            "466,668,158",
+            "542,29,236",
+            "431,825,988",
+            "739,650,466",
+            "52,470,668",
+            "216,146,977",
+            "819,987,18",
+            "117,168,530",
+            "805,96,715",
+            "346,949,466",
+            "970,615,88",
+            "941,993,340",
+            "862,61,35",
+            "984,92,344",
+            "425,690,689",};
         solve(data);
     }
     return 0;

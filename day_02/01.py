@@ -17,7 +17,6 @@ def is_twise(d:int) -> bool:
     if sd[mid:] == sd[:mid]:
         return True
     return False
-
 def part1(data:list[list[int]]):
     total = 0
     for ranges in data:
